@@ -26,6 +26,8 @@
 /// `HTTPMethod.get != HTTPMethod(rawValue: "get")`.
 ///
 /// See https://tools.ietf.org/html/rfc7231#section-4.3
+
+// TODO: - 为什么不用Enum
 public struct HTTPMethod: RawRepresentable, Equatable, Hashable {
     /// `CONNECT` method.
     public static let connect = HTTPMethod(rawValue: "CONNECT")
@@ -51,4 +53,12 @@ public struct HTTPMethod: RawRepresentable, Equatable, Hashable {
     public init(rawValue: String) {
         self.rawValue = rawValue
     }
+}
+
+public enum Method: String {
+    case get = "get"
+}
+
+extension Method: Equatable, Hashable {
+    
 }

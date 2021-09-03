@@ -66,6 +66,7 @@ public class Request {
     // MARK: - Initial State
 
     /// `UUID` providing a unique identifier for the `Request`, used in the `Hashable` and `Equatable` conformances.
+    /// 作为Hashable的值
     public let id: UUID
     /// The serial queue for all internal async actions.
     public let underlyingQueue: DispatchQueue
@@ -83,7 +84,11 @@ public class Request {
     /// Type encapsulating all mutable state that may need to be accessed from anything other than the `underlyingQueue`.
     struct MutableState {
         /// State of the `Request`.
-        var state: State = .initialized
+        var state: State = .initialized {
+            willSet {
+               print(newValue)
+            }
+        }
         /// `ProgressHandler` and `DispatchQueue` provided for upload progress callbacks.
         var uploadProgressHandler: (handler: ProgressHandler, queue: DispatchQueue)?
         /// `ProgressHandler` and `DispatchQueue` provided for download progress callbacks.
@@ -590,6 +595,7 @@ public class Request {
             completions.forEach { $0() }
 
             // Cleanup the request
+            // 从activeRequests中移除
             cleanup()
 
             return
@@ -719,8 +725,12 @@ public class Request {
 
             underlyingQueue.async { self.didResume() }
 
-            guard let task = mutableState.tasks.last, task.state != .completed else { return }
-
+            guard let task = mutableState.tasks.last, task.state != .completed else {
+                print("task empty")
+                return
+                
+            }
+            print("=====")
             task.resume()
             underlyingQueue.async { self.didResumeTask(task) }
         }
@@ -1070,6 +1080,7 @@ public class DataRequest: Request {
     /// `Data` read from the server so far.
     public var data: Data? { mutableData }
 
+    /// ⚠️ 访问和修改添加锁
     /// Protected storage for the `Data` read by the instance.
     @Protected
     private var mutableData: Data? = nil

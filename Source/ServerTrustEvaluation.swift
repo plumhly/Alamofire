@@ -383,6 +383,7 @@ extension Bundle: AlamofireExtended {}
 extension AlamofireExtension where ExtendedType: Bundle {
     /// Returns all valid `cer`, `crt`, and `der` certificates in the bundle.
     public var certificates: [SecCertificate] {
+        /// 调用Bundle的path方法
         paths(forResourcesOfTypes: [".cer", ".CER", ".crt", ".CRT", ".der", ".DER"]).compactMap { path in
             guard
                 let certificateData = try? Data(contentsOf: URL(fileURLWithPath: path)) as CFData,

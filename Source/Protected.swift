@@ -80,6 +80,7 @@ final class UnfairLock: Lock {
 }
 #endif
 
+/// ⚠️ 在访问和修改之前添加锁
 /// A thread-safe wrapper around a value.
 @propertyWrapper
 @dynamicMemberLookup

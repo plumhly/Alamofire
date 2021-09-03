@@ -1052,18 +1052,25 @@ open class Session {
 
         do {
             initialRequest = try convertible.asURLRequest()
+            /// 检测get是否含有httpbody
             try initialRequest.validate()
         } catch {
             rootQueue.async { request.didFailToCreateURLRequest(with: error.asAFError(or: .createURLRequestFailed(error: error))) }
             return
         }
 
+        /// 记录request
         rootQueue.async { request.didCreateInitialURLRequest(initialRequest) }
 
         guard !request.isCancelled else { return }
 
+        /// ⚠️获取adapter，
+        /// 1. 【reqeust, session】
+        /// 2. request
+        /// 3. session
         guard let adapter = adapter(for: request) else {
             guard shouldCreateTask() else { return }
+            /// 创建task，并判断状态
             rootQueue.async { self.didCreateURLRequest(initialRequest, for: request) }
             return
         }
@@ -1076,7 +1083,7 @@ open class Session {
                 self.rootQueue.async { request.didAdaptInitialRequest(initialRequest, to: adaptedRequest) }
 
                 guard shouldCreateTask() else { return }
-
+                /// 创建task，并判断状态
                 self.rootQueue.async { self.didCreateURLRequest(adaptedRequest, for: request) }
             } catch {
                 self.rootQueue.async { request.didFailToAdaptURLRequest(initialRequest, withError: .requestAdaptationFailed(error: error)) }
@@ -1093,10 +1100,12 @@ open class Session {
 
         guard !request.isCancelled else { return }
 
+        /// 创建task
         let task = request.task(for: urlRequest, using: session)
         requestTaskMap[request] = task
         request.didCreateTask(task)
 
+        /// 改变状态
         updateStatesForTask(task, request: request)
     }
 
@@ -1234,6 +1243,7 @@ extension Session: SessionStateProvider {
     func didCompleteTask(_ task: URLSessionTask, completion: @escaping () -> Void) {
         dispatchPrecondition(condition: .onQueue(rootQueue))
 
+        /// 请求执行和测量是否都完了
         let didDisassociate = requestTaskMap.disassociateIfNecessaryAfterCompletingTask(task)
 
         if didDisassociate {
